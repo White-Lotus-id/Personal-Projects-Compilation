@@ -1,4 +1,4 @@
-# notepadlm
+# notebooklm-offline
 
 Browser-based offline NotebookLM-style chat app with configurable Gemini / Groq / OpenRouter API support and local document search.
 
