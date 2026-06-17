@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SubnetForge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg:          #d8e0e8;
+    --surface:     #ffffff;
+    --panel:       #f2f5f8;
+    --header-bg:   #2b3a50;
+    --header-sec:  #1e2d3e;
+    --accent:      #e8b800;
+    --accent-dim:  #c89e00;
+    --blue:        #3a7cb8;
+    --blue-dim:    #2d6396;
+    --red:         #c23535;
+    --green:       #2d8c5e;
+    --text:        #1a2535;
+    --text-light:  #f0f4f8;
+    --muted:       #5a7a90;
+    --border:      #b4c2ce;
+    --border-light:#d4dce4;
+    --row-hover:   #edf2f7;
+    --row-stripe:  #f8fafb;
+    --mono:        'IBM Plex Mono', monospace;
+    --sans:        'IBM Plex Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ======================== HEADER ======================== */
+  .pt-header {
+    background: var(--header-bg);
+    border-bottom: 3px solid var(--accent);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
+
+  .pt-title-bar {
+    display: flex;
+    align-items: center;
+    padding: 9px 20px;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .pt-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pt-logo-accent {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .pt-logo-sep {
+    color: rgba(255,255,255,0.25);
+    font-weight: 300;
+  }
+
+  .pt-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 5px 20px;
+    gap: 2px;
+    background: var(--header-sec);
+  }
+
+  .pt-tool-btn {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.65);
+    background: transparent;
+    border: none;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.12s;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+  }
+
+  .pt-tool-btn:hover, .pt-tool-btn.active {
+    background: rgba(232,184,0,0.18);
+    color: var(--accent);
+  }
+
+  .pt-status-area {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    font-family: var(--mono);
+  }
+
+  .pt-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .pt-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #5dc87d;
+    box-shadow: 0 0 5px #5dc87d88;
+    animation: blink 2.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ======================== LAYOUT ======================== */
+  .pt-workspace {
+    display: flex;
+    min-height: calc(100vh - 72px);
+  }
+
+  .pt-main {
+    flex: 1;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* ======================== SECTION LABELS ======================== */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .section-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    background: var(--header-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  .section-badge.blue {
+    background: var(--header-bg);
+    color: #7bbae0;
+    border-color: #7bbae0;
+  }
+
+  .section-badge.out {
+    background: var(--accent);
+    color: var(--header-bg);
+    border-color: var(--accent);
+  }
+
+  .section-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--header-bg);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  /* ======================== CARDS ======================== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--header-bg);
+    padding: 20px 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .card.accent-top {
+    border-top-color: var(--accent);
+  }
+
+  .card.blue-top {
+    border-top-color: var(--blue);
+  }
+
+  /* ======================== MODE TABS ======================== */
+  .mode-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+    width: fit-content;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+
+  .mode-tab {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    padding: 8px 24px;
+    background: var(--panel);
+    color: var(--muted);
+    border: none;
+    cursor: pointer;
+    transition: all 0.12s;
+    border-right: 1px solid var(--border);
+  }
+
+  .mode-tab:last-child { border-right: none; }
+
+  .mode-tab.active {
+    background: var(--header-bg);
+    color: var(--accent);
+  }
+
+  .mode-tab:not(.active):hover {
+    background: #e4e9ef;
+    color: var(--text);
+  }
+
+  /* ======================== FORMS ======================== */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  input, select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.12s, box-shadow 0.12s;
+    width: 100%;
+    border-radius: 2px;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(58,124,184,0.12);
+  }
+
+  select option { background: var(--surface); }
+
+  /* ======================== VLSM ENTRIES ======================== */
+  .vlsm-list {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .vlsm-entry {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .vlsm-entry input { flex: 1; }
+
+  .vlsm-label {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 68px;
+    font-family: var(--mono);
+  }
+
+  /* ======================== BUTTONS ======================== */
+  .btn {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 8px 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.12s;
+    border-radius: 2px;
+  }
+
+  .btn-primary {
+    background: var(--header-bg);
+    color: var(--accent);
+    border: 1px solid var(--header-bg);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent);
+    color: var(--header-bg);
+    border-color: var(--accent);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--header-bg);
+    border: 1px solid var(--border);
+  }
+
+  .btn-outline:hover {
+    background: var(--panel);
+    border-color: var(--header-bg);
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: var(--header-bg);
+    border: 1px solid var(--accent-dim);
+    font-weight: 700;
+  }
+
+  .btn-accent:hover {
+    background: var(--accent-dim);
+  }
+
+  .btn-blue {
+    background: var(--blue);
+    color: #fff;
+    border: 1px solid var(--blue-dim);
+  }
+
+  .btn-blue:hover { background: var(--blue-dim); }
+
+  .btn-sm { padding: 5px 12px; font-size: 10px; }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(194,53,53,0.3);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 9px;
+    border-radius: 2px;
+    transition: all 0.12s;
+  }
+
+  .btn-danger:hover { background: rgba(194,53,53,0.07); }
+
+  .actions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  /* ======================== TABLE ======================== */
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  thead tr {
+    background: var(--header-bg);
+  }
+
+  th {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--text-light);
+    padding: 9px 11px;
+    text-align: left;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+
+  th:last-child { border-right: none; }
+
+  th.col-accent {
+    color: var(--accent);
+  }
+
+  td {
+    padding: 8px 11px;
+    border-bottom: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  td:last-child { border-right: none; }
+
+  tbody tr:nth-child(even) td { background: var(--row-stripe); }
+  tbody tr:hover td { background: var(--row-hover); }
+
+  td.col-no {
+    color: var(--accent-dim);
+    font-weight: 600;
+    background: rgba(43,58,80,0.04);
+  }
+
+  td.col-network {
+    color: var(--header-bg);
+    font-weight: 600;
+  }
+
+  td.col-cidr {
+    color: var(--blue);
+    font-weight: 600;
+  }
+
+  td.col-octet {
+    color: var(--muted);
+    text-align: center;
+  }
+
+  td.col-inc {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* ======================== CHEAT SHEET ======================== */
+  .cheatsheet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 14px;
+  }
+
+  @media (max-width: 700px) {
+    .cheatsheet-grid { grid-template-columns: 1fr; }
+  }
+
+  .cheat-table {
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .cheat-table-title {
+    background: var(--header-bg);
+    color: var(--text-light);
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 11px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .cheat-table table { font-size: 11px; }
+  .cheat-table th { font-size: 9px; padding: 7px 10px; }
+  .cheat-table td { padding: 5px 10px; }
+
+  td.octet-marker {
+    background: rgba(43,58,80,0.08) !important;
+    color: var(--header-bg);
+    font-weight: 700;
+    font-size: 10px;
+    text-align: right;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding-right: 6px;
+  }
+
+  /* ======================== CLI SECTION ======================== */
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-light);
+    background: var(--header-bg);
+    width: 22px; height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--header-bg);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .proto-grid {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .proto-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    padding: 6px 14px;
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.12s;
+    border-radius: 2px;
+  }
+
+  .proto-btn.active {
+    border-color: var(--header-bg);
+    color: var(--header-bg);
+    background: rgba(43,58,80,0.08);
+  }
+
+  .proto-btn:not(.active):hover {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  /* ROUTER CARDS */
+  .router-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .router-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--blue);
+    padding: 14px;
+  }
+
+  .router-card-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .net-check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .net-check-list label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 11px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--mono);
+    font-weight: 400;
+  }
+
+  .net-check-list input[type=checkbox] {
+    width: 13px; height: 13px;
+    accent-color: var(--blue);
+    border: none;
+    padding: 0;
+  }
+
+  /* SERIAL LINKS */
+  .serial-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 10px;
+  }
+
+  .serial-entry {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .serial-entry select { flex: 1; min-width: 100px; }
+
+  .serial-sep {
+    color: var(--blue);
+    font-size: 14px;
+    font-family: var(--mono);
+  }
+
+  /* OUTPUT TABS */
+  .router-output {
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--blue);
+  }
+
+  .router-output-header {
+    background: var(--header-bg);
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.8px;
+  }
+
+  .tab-bar {
+    display: flex;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.12s;
+    text-transform: uppercase;
+  }
+
+  .tab-btn.active {
+    color: var(--blue);
+    border-bottom: 2px solid var(--blue);
+    background: rgba(58,124,184,0.06);
+  }
+
+  .tab-content { padding: 14px; display: none; }
+  .tab-content.active { display: block; }
+
+  .code-block {
+    background: #0f1820;
+    border: 1px solid #2a3a4a;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #9fd8a8;
+    line-height: 1.65;
+    white-space: pre;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 7px; right: 7px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    background: #1e2d3e;
+    color: rgba(255,255,255,0.45);
+    border: 1px solid #2a3a4a;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .copy-btn:hover, .copy-btn.copied {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border-light);
+    margin: 16px 0;
+  }
+
+  /* MISC */
+  .locked-msg {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.8px;
+    font-family: var(--mono);
+    background: var(--panel);
+    border: 1px dashed var(--border);
+  }
+
+  .hidden { display: none !important; }
+
+  .error-text {
+    color: var(--red);
+    font-size: 11px;
+    margin-top: 8px;
+    font-family: var(--mono);
+  }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(43,58,80,0.06);
+    border-left: 3px solid var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--header-bg);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .next-addr {
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  @media (max-width: 600px) {
+    .pt-main { padding: 14px 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================== HEADER ======================== -->
+<div class="pt-header">
+  <div class="pt-title-bar">
+    <div class="pt-logo">
+      <span class="pt-logo-accent">&#9632; SUBNETFORGE</span>
+      <span class="pt-logo-sep">|</span>
+      <span style="opacity:0.6; font-size:11px;">VLSM / FLSM CALCULATOR</span>
+    </div>
+    <div class="pt-status-area">
+      <div class="pt-indicator">
+        <div class="pt-dot"></div>
+        <span>OFFLINE</span>
+      </div>
+    </div>
+  </div>
+  <div class="pt-toolbar">
+    <button class="pt-tool-btn active" onclick="scrollToSection('calcCard')">Calculator</button>
+    <button class="pt-tool-btn" onclick="scrollToSection('resultCard')">Subnet Table</button>
+    <button class="pt-tool-btn" onclick="scrollToSection('refCard')">Reference</button>
+    <button class="pt-tool-btn" onclick="scrollToSection('cliCard')">CLI Generator</button>
+  </div>
+</div>
+
+<div class="pt-workspace">
+<div class="pt-main">
+
+  <!-- ===================== SECTION 1: CALCULATOR ===================== -->
+  <div class="card" id="calcCard">
+    <div class="section-label">
+      <div class="section-badge">01</div>
+      <div class="section-title">Subnet Calculator</div>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('flsm')">FLSM</button>
+      <button class="mode-tab" onclick="setMode('vlsm')">VLSM</button>
+    </div>
+
+    <!-- FLSM INPUTS -->
+    <div id="flsmInputs">
+      <div class="form-grid">
+        <div class="field">
+          <label>Network Address</label>
+          <input type="text" id="flsmNet" placeholder="192.168.1.0">
+        </div>
+        <div class="field">
+          <label>Prefix / Subnet Mask</label>
+          <input type="text" id="flsmMask" placeholder="/24 or 255.255.255.0">
+        </div>
+        <div class="field">
+          <label>Number of Subnets</label>
+          <input type="number" id="flsmCount" placeholder="4" min="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- VLSM INPUTS -->
+    <div id="vlsmInputs" class="hidden">
+      <div class="form-grid" style="grid-template-columns: minmax(200px,1fr);">
+        <div class="field">
+          <label>Network Address</label>
+          <input type="text" id="vlsmNet" placeholder="192.168.1.0">
+        </div>
+      </div>
+      <div style="margin-top:14px; margin-bottom:7px; font-size:10px; color:var(--muted); letter-spacing:0.8px; text-transform:uppercase; font-weight:600;">Subnets (largest to smallest)</div>
+      <div class="vlsm-list" id="vlsmList"></div>
+      <div style="margin-top:9px;">
+        <button class="btn btn-outline btn-sm" onclick="addVlsmEntry()">+ Add Subnet</button>
+      </div>
+    </div>
+
+    <div id="calcError" class="error-text"></div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" onclick="calculate()">Calculate</button>
+      <button class="btn btn-outline" onclick="resetCalc()">Reset</button>
+    </div>
+  </div>
+
+  <!-- ===================== RESULT TABLE ===================== -->
+  <div class="card accent-top" id="resultCard">
+    <div class="section-label">
+      <div class="section-badge out">OUT</div>
+      <div class="section-title">Subnet Table</div>
+    </div>
+    <div class="info-row" id="tableInfoRow">
+      <span>192.168.10.0 /24 &mdash; VLSM</span>
+      <span style="margin-left:auto; font-weight:400; color:var(--muted);">Next Available:</span>
+      <span class="next-addr" id="nextAddr">192.168.10.220</span>
+    </div>
+    <div class="table-wrap">
+      <table id="subnetTable">
+        <thead>
+          <tr>
+            <th class="col-accent">#</th>
+            <th>Hosts</th>
+            <th>CIDR</th>
+            <th>Octet</th>
+            <th>Increment</th>
+            <th>Network Address</th>
+            <th>Subnet Mask</th>
+            <th>1st Usable IP</th>
+            <th>Last Usable IP</th>
+            <th>Broadcast ID</th>
+          </tr>
+        </thead>
+        <tbody id="subnetTbody"></tbody>
+      </table>
+    </div>
+    <div class="actions-row">
+      <button class="btn btn-accent" onclick="exportXLSX()">Export to Excel</button>
+    </div>
+  </div>
+
+  <!-- ===================== REFERENCE TABLE ===================== -->
+  <div class="card" id="refCard">
+    <div class="section-label">
+      <div class="section-badge blue">REF</div>
+      <div class="section-title">Power-of-2 Reference</div>
+    </div>
+    <div class="cheatsheet-grid">
+      <div class="cheat-table">
+        <div class="cheat-table-title">4th &amp; 3rd Octet &mdash; /17 to /32</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Binary</th>
+              <th>Hosts / Incr.</th>
+              <th>Increment</th>
+              <th>CIDR</th>
+              <th>Subnet Mask</th>
+            </tr>
+          </thead>
+          <tbody id="cheatTbody1"></tbody>
+        </table>
+      </div>
+      <div class="cheat-table">
+        <div class="cheat-table-title">2nd &amp; 1st Octet &mdash; /1 to /16</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Binary</th>
+              <th>Hosts / Incr.</th>
+              <th>Increment</th>
+              <th>CIDR</th>
+              <th>Subnet Mask</th>
+            </tr>
+          </thead>
+          <tbody id="cheatTbody2"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 2: CLI GENERATOR ===================== -->
+  <div class="card blue-top" id="cliCard">
+    <div class="section-label">
+      <div class="section-badge blue">02</div>
+      <div class="section-title">CLI Generator</div>
+    </div>
+
+    <div id="cliLocked">
+      <div class="locked-msg">[ CALCULATE A SUBNET TABLE FIRST TO UNLOCK CLI GENERATOR ]</div>
+    </div>
+
+    <div id="cliContent" class="hidden">
+
+      <!-- STEP 1: TOPOLOGY -->
+      <div style="margin-bottom:20px;">
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-label">Topology</div>
+        </div>
+        <div class="proto-grid">
+          <button class="proto-btn active" id="topoRing" onclick="setTopo('ring')">RING</button>
+          <button class="proto-btn" id="topoBus" onclick="setTopo('bus')">BUS</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- STEP 2: ROUTING PROTOCOL -->
+      <div style="margin-bottom:20px; margin-top:16px;">
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-label">Routing Protocol</div>
+        </div>
+        <div class="proto-grid" id="protoGrid">
+          <button class="proto-btn active" data-proto="static" onclick="setProto('static')">STATIC</button>
+          <button class="proto-btn" data-proto="rip" onclick="setProto('rip')">RIP v2</button>
+          <button class="proto-btn" data-proto="eigrp" onclick="setProto('eigrp')">EIGRP</button>
+          <button class="proto-btn" data-proto="ospf" onclick="setProto('ospf')">OSPF</button>
+          <button class="proto-btn" data-proto="bgp" onclick="setProto('bgp')">BGP</button>
+        </div>
+        <div id="eigrpAsField" class="hidden" style="margin-top:10px;">
+          <div class="field" style="max-width:190px;">
+            <label>EIGRP AS Number</label>
+            <input type="number" id="eigrpAs" value="100" min="1">
+          </div>
+        </div>
+        <div id="ospfPidField" class="hidden" style="margin-top:10px;">
+          <div class="field" style="max-width:190px;">
+            <label>OSPF Process ID</label>
+            <input type="number" id="ospfPid" value="1" min="1">
+          </div>
+        </div>
+        <div id="bgpAsField" class="hidden" style="margin-top:10px;">
+          <div class="field" style="max-width:190px;">
+            <label>BGP AS Number</label>
+            <input type="number" id="bgpAs" value="65001" min="1">
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- STEP 3: ROUTER ASSIGNMENT -->
+      <div style="margin-bottom:20px; margin-top:16px;">
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-label">Router Assignment (LAN Networks)</div>
+        </div>
+        <div class="router-grid" id="routerAssignGrid"></div>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="addRouter()">+ Add Router</button>
+          <button class="btn btn-danger btn-sm" onclick="removeLastRouter()">- Remove Last</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- STEP 4: SERIAL LINKS -->
+      <div style="margin-bottom:20px; margin-top:16px;">
+        <div class="step-row">
+          <div class="step-num">4</div>
+          <div class="step-label">Serial Links</div>
+        </div>
+        <div id="serialHint" style="font-size:11px; color:var(--muted); margin-bottom:9px; font-family:var(--mono);"></div>
+        <div class="serial-list" id="serialList"></div>
+        <div style="margin-top:9px; display:none;" id="serialAddRow"></div>
+      </div>
+
+      <div id="cliError" class="error-text"></div>
+
+      <div class="actions-row">
+        <button class="btn btn-primary" onclick="generateCLI()">Generate CLI</button>
+        <button class="btn btn-outline" onclick="resetCLI()">Reset CLI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLI OUTPUT -->
+  <div id="cliOutputSection" class="hidden">
+    <div class="card blue-top">
+      <div class="section-label">
+        <div class="section-badge blue">CLI</div>
+        <div class="section-title">Generated Configurations</div>
+      </div>
+      <div id="cliOutputs"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ============================================================
+//  STATE
+// ============================================================
+let mode = 'flsm';
+let topo = 'ring';
+let proto = 'static';
+let subnetData = [];
+let routers = [];
+let serialLinks = [];
+let routerCount = 0;
+
+// ============================================================
+//  IP MATH
+// ============================================================
+function ipToInt(ip) {
+  return ip.split('.').reduce((acc, o) => (acc << 8) + parseInt(o), 0) >>> 0;
+}
+function intToIp(n) {
+  return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+}
+function prefixToMask(prefix) {
+  if (prefix === 0) return 0;
+  const shift = 32 - prefix;
+  return shift >= 32 ? 0 : (0xffffffff << shift) >>> 0;
+}
+function maskToPrefix(maskInt) {
+  let n = maskInt, count = 0;
+  while (n & 0x80000000) { count++; n = (n << 1) >>> 0; }
+  return count;
+}
+function parseMaskInput(val) {
+  val = val.trim();
+  if (val.startsWith('/')) val = val.slice(1);
+  if (/^\d+$/.test(val)) {
+    const p = parseInt(val);
+    if (p < 0 || p > 32) throw new Error('Prefix must be 0-32');
+    return p;
+  }
+  if (val.includes('.')) {
+    const parts = val.split('.');
+    if (parts.length !== 4) throw new Error('Invalid mask');
+    return maskToPrefix(ipToInt(val));
+  }
+  throw new Error('Invalid mask/prefix');
+}
+function wildcardMask(maskInt) { return (~maskInt) >>> 0; }
+
+// Class A networks: 10.0.0.0/8 through 20.0.0.0/8
+const classANets = (function() {
+  const nets = [];
+  for (let i = 10; i <= 20; i++) {
+    const networkInt = ipToInt(i + '.0.0.0');
+    const maskInt = 0xff000000 >>> 0;
+    nets.push({
+      no: 'A' + i,
+      hosts: 16777214,
+      cidr: '/8',
+      octet: '1st',
+      increment: 256,
+      blockSize: 16777216,
+      networkId: i + '.0.0.0',
+      mask: '255.0.0.0',
+      first: i + '.0.0.1',
+      second: i + '.0.0.2',
+      last: i + '.255.255.254',
+      broadcast: i + '.255.255.255',
+      networkInt, maskInt, prefix: 8
+    });
+  }
+  return nets;
+})();
+
+// Resolve the network object for a serial link (subnetData or classANets)
+function getSerialNet(link) {
+  if (link.classAIndex !== -1) return classANets[link.classAIndex];
+  if (link.netIndex !== -1) return subnetData[link.netIndex];
+  return null;
+}
+
+function getOctetLabel(prefix) {
+  if (prefix >= 25) return '4th';
+  if (prefix >= 17) return '3rd';
+  if (prefix >= 9)  return '2nd';
+  return '1st';
+}
+
+function getOctetIncrement(prefix) {
+  if (prefix >= 25) return Math.pow(2, 32 - prefix);
+  if (prefix >= 17) return Math.pow(2, 24 - prefix);
+  if (prefix >= 9)  return Math.pow(2, 16 - prefix);
+  return Math.pow(2, 8 - prefix);
+}
+
+function buildSubnetRow(no, networkInt, prefix, inputHosts) {
+  const maskInt = prefixToMask(prefix);
+  const blockSize = prefix === 32 ? 1 : Math.pow(2, 32 - prefix);
+  const calcHosts = prefix >= 31 ? (prefix === 31 ? 2 : 1) : blockSize - 2;
+  const broadcastInt = (networkInt | wildcardMask(maskInt)) >>> 0;
+  const firstInt = prefix >= 31 ? networkInt : networkInt + 1;
+  const secondInt = prefix >= 31 ? networkInt : networkInt + 2;
+  const lastInt = prefix >= 31 ? broadcastInt : broadcastInt - 1;
+  return {
+    no,
+    hosts: inputHosts != null ? inputHosts : (calcHosts < 0 ? 0 : calcHosts),
+    cidr: '/' + prefix,
+    octet: getOctetLabel(prefix),
+    increment: getOctetIncrement(prefix),
+    blockSize,
+    networkId: intToIp(networkInt),
+    mask: intToIp(maskInt),
+    first: intToIp(firstInt),
+    second: intToIp(secondInt),
+    last: intToIp(lastInt),
+    broadcast: intToIp(broadcastInt),
+    networkInt, prefix, maskInt
+  };
+}
+
+// ============================================================
+//  SCROLL NAV
+// ============================================================
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+//  MODE TOGGLE
+// ============================================================
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-tab').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && m === 'flsm') || (i === 1 && m === 'vlsm'));
+  });
+  document.getElementById('flsmInputs').classList.toggle('hidden', m !== 'flsm');
+  document.getElementById('vlsmInputs').classList.toggle('hidden', m !== 'vlsm');
+  document.getElementById('calcError').textContent = '';
+  if (m === 'vlsm' && document.getElementById('vlsmList').children.length === 0) {
+    addVlsmEntry(); addVlsmEntry();
+  }
+}
+
+// ============================================================
+//  VLSM ENTRIES
+// ============================================================
+let vlsmEntryCount = 0;
+function addVlsmEntry() {
+  vlsmEntryCount++;
+  const id = 'vlsm_' + vlsmEntryCount;
+  const div = document.createElement('div');
+  div.className = 'vlsm-entry';
+  div.id = id;
+  div.innerHTML = `
+    <span class="vlsm-label">Subnet ${vlsmEntryCount}</span>
+    <input type="number" placeholder="Required Hosts" min="1" style="max-width:170px;">
+    <button class="btn-danger" onclick="removeVlsmEntry('${id}')">✕</button>
+  `;
+  document.getElementById('vlsmList').appendChild(div);
+}
+
+function removeVlsmEntry(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  renumberVlsm();
+}
+
+function renumberVlsm() {
+  document.querySelectorAll('.vlsm-entry .vlsm-label').forEach((e, i) => {
+    e.textContent = 'Subnet ' + (i + 1);
+  });
+}
+
+// ============================================================
+//  CALCULATE
+// ============================================================
+function calculate() {
+  const errEl = document.getElementById('calcError');
+  errEl.textContent = '';
+  try {
+    if (mode === 'flsm') calcFLSM();
+    else calcVLSM();
+  } catch (e) {
+    errEl.textContent = 'Error: ' + e.message;
+  }
+}
+
+function calcFLSM() {
+  const netStr = document.getElementById('flsmNet').value.trim();
+  const maskStr = document.getElementById('flsmMask').value.trim();
+  const countStr = document.getElementById('flsmCount').value.trim();
+  if (!netStr || !maskStr || !countStr) throw new Error('Fill all fields');
+  const baseNet = ipToInt(netStr);
+  const prefix = parseMaskInput(maskStr);
+  const count = parseInt(countStr);
+  if (isNaN(count) || count < 1) throw new Error('Subnet count must be >= 1');
+  let subnetBits = 0;
+  while ((1 << subnetBits) < count) subnetBits++;
+  const newPrefix = prefix + subnetBits;
+  if (newPrefix > 30) throw new Error('Not enough address space for ' + count + ' subnets');
+  subnetData = [];
+  for (let i = 0; i < count; i++) {
+    const increment = Math.pow(2, 32 - newPrefix);
+    const netInt = (baseNet + i * increment) >>> 0;
+    subnetData.push(buildSubnetRow(i + 1, netInt, newPrefix, null));
+  }
+  const title = netStr + ' /' + prefix + ' \u2014 FLSM';
+  renderTable(title);
+}
+
+function calcVLSM() {
+  const netStr = document.getElementById('vlsmNet').value.trim();
+  if (!netStr) throw new Error('Enter a network address');
+  const entries = document.querySelectorAll('#vlsmList .vlsm-entry');
+  if (entries.length === 0) throw new Error('Add at least one subnet');
+  let requirements = [];
+  entries.forEach((e, i) => {
+    const h = parseInt(e.querySelector('input').value);
+    if (isNaN(h) || h < 1) throw new Error('Subnet ' + (i + 1) + ': enter a valid host count');
+    requirements.push(h);
+  });
+  requirements.sort((a, b) => b - a);
+  let cursor = ipToInt(netStr);
+  subnetData = [];
+  for (let i = 0; i < requirements.length; i++) {
+    let p = 30;
+    while (p >= 1) {
+      if (Math.pow(2, 32 - p) - 2 >= requirements[i]) break;
+      p--;
+    }
+    if (p < 1) throw new Error('Cannot fit ' + requirements[i] + ' hosts');
+    subnetData.push(buildSubnetRow(i + 1, cursor, p, requirements[i]));
+    cursor = (cursor + Math.pow(2, 32 - p)) >>> 0;
+  }
+  const title = netStr + ' \u2014 VLSM';
+  renderTable(title);
+}
+
+function renderTable(title) {
+  const last = subnetData[subnetData.length - 1];
+  const nextInt = (last.networkInt + last.blockSize) >>> 0;
+  const nextAddr = intToIp(nextInt);
+
+  document.getElementById('tableInfoRow').innerHTML =
+    `<span>${title}</span>
+     <span style="margin-left:auto; font-weight:400; color:var(--muted);">Next Available:</span>
+     <span class="next-addr">${nextAddr}</span>`;
+
+  const tbody = document.getElementById('subnetTbody');
+  tbody.innerHTML = '';
+  subnetData.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-no">${s.no}</td>
+      <td>${s.hosts}</td>
+      <td class="col-cidr">${s.cidr}</td>
+      <td class="col-octet">${s.octet}</td>
+      <td class="col-inc">${s.increment}</td>
+      <td class="col-network">${s.networkId}</td>
+      <td>${s.mask}</td>
+      <td>${s.first}</td>
+      <td>${s.last}</td>
+      <td>${s.broadcast}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('resultCard').classList.remove('hidden');
+  unlockCLI();
+}
+
+function resetCalc() {
+  subnetData = [];
+  document.getElementById('calcError').textContent = '';
+  document.getElementById('flsmNet').value = '';
+  document.getElementById('flsmMask').value = '';
+  document.getElementById('flsmCount').value = '';
+  document.getElementById('vlsmNet').value = '';
+  document.getElementById('vlsmList').innerHTML = '';
+  vlsmEntryCount = 0;
+  lockCLI();
+  loadCNSData();
+}
+
+// ============================================================
+//  PRE-LOAD CNS TABLE DATA (192.168.10.0 /24 VLSM)
+// ============================================================
+function loadCNSData() {
+  subnetData = [
+    { no:1, hosts:100, cidr:'/25', octet:'4th', increment:128, networkId:'192.168.10.0',   mask:'255.255.255.128', first:'192.168.10.1',   last:'192.168.10.126', broadcast:'192.168.10.127', networkInt:ipToInt('192.168.10.0'),   prefix:25, maskInt:prefixToMask(25) },
+    { no:2, hosts:50,  cidr:'/26', octet:'4th', increment:64,  networkId:'192.168.10.128', mask:'255.255.255.192', first:'192.168.10.129', last:'192.168.10.190', broadcast:'192.168.10.191', networkInt:ipToInt('192.168.10.128'), prefix:26, maskInt:prefixToMask(26) },
+    { no:3, hosts:10,  cidr:'/28', octet:'4th', increment:16,  networkId:'192.168.10.192', mask:'255.255.255.240', first:'192.168.10.193', last:'192.168.10.206', broadcast:'192.168.10.207', networkInt:ipToInt('192.168.10.192'), prefix:28, maskInt:prefixToMask(28) },
+    { no:4, hosts:2,   cidr:'/30', octet:'4th', increment:4,   networkId:'192.168.10.208', mask:'255.255.255.252', first:'192.168.10.209', last:'192.168.10.210', broadcast:'192.168.10.211', networkInt:ipToInt('192.168.10.208'), prefix:30, maskInt:prefixToMask(30) },
+    { no:5, hosts:2,   cidr:'/30', octet:'4th', increment:4,   networkId:'192.168.10.212', mask:'255.255.255.252', first:'192.168.10.213', last:'192.168.10.214', broadcast:'192.168.10.215', networkInt:ipToInt('192.168.10.212'), prefix:30, maskInt:prefixToMask(30) },
+    { no:6, hosts:2,   cidr:'/30', octet:'4th', increment:4,   networkId:'192.168.10.216', mask:'255.255.255.252', first:'192.168.10.217', last:'192.168.10.218', broadcast:'192.168.10.219', networkInt:ipToInt('192.168.10.216'), prefix:30, maskInt:prefixToMask(30) },
+  ];
+
+  document.getElementById('tableInfoRow').innerHTML =
+    `<span>192.168.10.0 /24 &mdash; VLSM</span>
+     <span style="margin-left:auto; font-weight:400; color:var(--muted);">Next Available:</span>
+     <span class="next-addr">192.168.10.220</span>`;
+
+  const tbody = document.getElementById('subnetTbody');
+  tbody.innerHTML = '';
+  subnetData.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-no">${s.no}</td>
+      <td>${s.hosts}</td>
+      <td class="col-cidr">${s.cidr}</td>
+      <td class="col-octet">${s.octet}</td>
+      <td class="col-inc">${s.increment}</td>
+      <td class="col-network">${s.networkId}</td>
+      <td>${s.mask}</td>
+      <td>${s.first}</td>
+      <td>${s.last}</td>
+      <td>${s.broadcast}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  unlockCLI();
+}
+
+// ============================================================
+//  BUILD CHEAT SHEET
+// ============================================================
+const CHEAT_ROWS = [
+  { bin:'2^0',  hosts:1,          inc:1,   cidr:'/32', mask:'255.255.255.255', octet:'4th' },
+  { bin:'2^1',  hosts:2,          inc:2,   cidr:'/31', mask:'255.255.255.254', octet:'4th' },
+  { bin:'2^2',  hosts:4,          inc:4,   cidr:'/30', mask:'255.255.255.252', octet:'4th' },
+  { bin:'2^3',  hosts:8,          inc:8,   cidr:'/29', mask:'255.255.255.248', octet:'4th', startOctet:true, octetLabel:'4th Octet' },
+  { bin:'2^4',  hosts:16,         inc:16,  cidr:'/28', mask:'255.255.255.240', octet:'4th' },
+  { bin:'2^5',  hosts:32,         inc:32,  cidr:'/27', mask:'255.255.255.224', octet:'4th' },
+  { bin:'2^6',  hosts:64,         inc:64,  cidr:'/26', mask:'255.255.255.192', octet:'4th' },
+  { bin:'2^7',  hosts:128,        inc:128, cidr:'/25', mask:'255.255.255.128', octet:'4th' },
+  { bin:'2^8',  hosts:256,        inc:1,   cidr:'/24', mask:'255.255.255.0',   octet:'3rd' },
+  { bin:'2^9',  hosts:512,        inc:2,   cidr:'/23', mask:'255.255.254.0',   octet:'3rd' },
+  { bin:'2^10', hosts:1024,       inc:4,   cidr:'/22', mask:'255.255.252.0',   octet:'3rd', startOctet:true, octetLabel:'3rd Octet' },
+  { bin:'2^11', hosts:2048,       inc:8,   cidr:'/21', mask:'255.255.248.0',   octet:'3rd' },
+  { bin:'2^12', hosts:4096,       inc:16,  cidr:'/20', mask:'255.255.240.0',   octet:'3rd' },
+  { bin:'2^13', hosts:8192,       inc:32,  cidr:'/19', mask:'255.255.224.0',   octet:'3rd' },
+  { bin:'2^14', hosts:16384,      inc:64,  cidr:'/18', mask:'255.255.192.0',   octet:'3rd' },
+  { bin:'2^15', hosts:32768,      inc:128, cidr:'/17', mask:'255.255.128.0',   octet:'3rd' },
+  { bin:'2^16', hosts:65536,      inc:1,   cidr:'/16', mask:'255.255.0.0',     octet:'2nd' },
+  { bin:'2^17', hosts:131072,     inc:2,   cidr:'/15', mask:'255.254.0.0',     octet:'2nd' },
+  { bin:'2^18', hosts:262144,     inc:4,   cidr:'/14', mask:'255.252.0.0',     octet:'2nd' },
+  { bin:'2^19', hosts:524288,     inc:8,   cidr:'/13', mask:'255.248.0.0',     octet:'2nd', startOctet:true, octetLabel:'2nd Octet' },
+  { bin:'2^20', hosts:1048576,    inc:16,  cidr:'/12', mask:'255.240.0.0',     octet:'2nd' },
+  { bin:'2^21', hosts:2097152,    inc:32,  cidr:'/11', mask:'255.224.0.0',     octet:'2nd' },
+  { bin:'2^22', hosts:4194304,    inc:64,  cidr:'/10', mask:'255.192.0.0',     octet:'2nd' },
+  { bin:'2^23', hosts:8388608,    inc:128, cidr:'/9',  mask:'255.128.0.0',     octet:'2nd' },
+  { bin:'2^24', hosts:16777216,   inc:1,   cidr:'/8',  mask:'255.0.0.0',       octet:'1st' },
+  { bin:'2^25', hosts:33554432,   inc:2,   cidr:'/7',  mask:'254.0.0.0',       octet:'1st' },
+  { bin:'2^26', hosts:67108864,   inc:4,   cidr:'/6',  mask:'252.0.0.0',       octet:'1st', startOctet:true, octetLabel:'1st Octet' },
+  { bin:'2^27', hosts:134217728,  inc:8,   cidr:'/5',  mask:'248.0.0.0',       octet:'1st' },
+  { bin:'2^28', hosts:268435456,  inc:16,  cidr:'/4',  mask:'240.0.0.0',       octet:'1st' },
+  { bin:'2^29', hosts:536870912,  inc:32,  cidr:'/3',  mask:'224.0.0.0',       octet:'1st' },
+  { bin:'2^30', hosts:1073741824, inc:64,  cidr:'/2',  mask:'192.0.0.0',       octet:'1st' },
+  { bin:'2^31', hosts:2147483648, inc:128, cidr:'/1',  mask:'128.0.0.0',       octet:'1st' },
+];
+
+function buildCheatSheet() {
+  const t1 = document.getElementById('cheatTbody1');
+  const t2 = document.getElementById('cheatTbody2');
+  CHEAT_ROWS.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    const octetCell = r.startOctet
+      ? `<td class="octet-marker">${r.octetLabel}</td>`
+      : `<td></td>`;
+    tr.innerHTML = `
+      <td style="font-family:var(--mono); color:var(--muted); font-size:10px;">${r.bin}</td>
+      <td style="font-family:var(--mono);">${r.hosts.toLocaleString()}</td>
+      <td style="font-family:var(--mono); color:var(--green); font-weight:600;">${r.inc}</td>
+      <td style="font-family:var(--mono); color:var(--blue); font-weight:600;">${r.cidr}</td>
+      <td style="font-family:var(--mono);">${r.mask}</td>
+    `;
+    if (i < 16) t1.appendChild(tr);
+    else t2.appendChild(tr);
+  });
+}
+
+// ============================================================
+//  EXPORT XLSX
+// ============================================================
+function exportXLSX() {
+  const headers = ['#','Hosts','CIDR','Octet','Increment','Network Address','Subnet Mask','1st Usable IP','Last Usable IP','Broadcast ID'];
+  const rows = subnetData.map(s => [s.no, s.hosts, s.cidr, s.octet, s.increment, s.networkId, s.mask, s.first, s.last, s.broadcast]);
+  const ws = buildWorksheet([headers, ...rows]);
+  const wb = buildWorkbook(ws, 'Subnets');
+  downloadXLSX(wb, 'subnet_table.xlsx');
+}
+
+function buildStylesXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font><sz val="11"/><name val="Calibri"/></font>
+    <font><b/><sz val="11"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="3">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFE8B800"/><bgColor indexed="64"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color auto="1"/></left>
+      <right style="thin"><color auto="1"/></right>
+      <top style="thin"><color auto="1"/></top>
+      <bottom style="thin"><color auto="1"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="3">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+  </cellXfs>
+</styleSheet>`;
+}
+
+function buildWorksheet(data) {
+  let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  xml += '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  data.forEach((row, ri) => {
+    const isHeader = ri === 0;
+    const styleIdx = isHeader ? 1 : 2;
+    xml += `<row r="${ri + 1}">`;
+    row.forEach((cell, ci) => {
+      const col = colName(ci), ref = col + (ri + 1);
+      if (typeof cell === 'number') {
+        xml += `<c r="${ref}" s="${styleIdx}"><v>${cell}</v></c>`;
+      } else {
+        const esc = String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        xml += `<c r="${ref}" t="inlineStr" s="${styleIdx}"><is><t>${esc}</t></is></c>`;
+      }
+    });
+    xml += '</row>';
+  });
+  xml += '</sheetData></worksheet>';
+  return xml;
+}
+
+function colName(idx) {
+  let name = ''; idx++;
+  while (idx > 0) { let rem = (idx - 1) % 26; name = String.fromCharCode(65 + rem) + name; idx = Math.floor((idx - 1) / 26); }
+  return name;
+}
+
+function buildWorkbook(wsXml, sheetName) {
+  return {
+    wbXml: `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${sheetName}" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    relsXml: `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    wsXml,
+    stylesXml: buildStylesXml(),
+    contentXml: `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+  };
+}
+
+function downloadXLSX(wb, filename) {
+  const files = {
+    '[Content_Types].xml': wb.contentXml,
+    '_rels/.rels': `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml': wb.wbXml,
+    'xl/_rels/workbook.xml.rels': wb.relsXml,
+    'xl/styles.xml': wb.stylesXml,
+    'xl/worksheets/sheet1.xml': wb.wsXml,
+  };
+  const zip = buildZip(files);
+  const blob = new Blob([zip], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function buildZip(files) {
+  const enc = new TextEncoder();
+  let localParts = [], centralParts = [], offset = 0;
+  const crc32Table = (() => {
+    let t = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[i] = c;
+    }
+    return t;
+  })();
+  function crc32(data) { let c = 0xFFFFFFFF; for (let i = 0; i < data.length; i++) c = crc32Table[(c ^ data[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function concat(...arrays) { const t = arrays.reduce((s,a) => s+a.length, 0); const o = new Uint8Array(t); let p = 0; for (const a of arrays) { o.set(a, p); p += a.length; } return o; }
+  function u16(n) { return new Uint8Array([n & 0xff, (n >> 8) & 0xff]); }
+  function u32(n) { return new Uint8Array([n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]); }
+  function b(...v) { return new Uint8Array(v); }
+  for (const [name, fileContent] of Object.entries(files)) {
+    const nb = enc.encode(name), db = enc.encode(fileContent);
+    const crc = crc32(db), size = db.length;
+    const lh = concat(b(0x50,0x4B,0x03,0x04),b(20,0),b(0,0),b(0,0),b(0,0,0,0),u32(crc),u32(size),u32(size),u16(nb.length),b(0,0),nb,db);
+    const ce = concat(b(0x50,0x4B,0x01,0x02),b(20,0,20,0),b(0,0),b(0,0),b(0,0,0,0),u32(crc),u32(size),u32(size),u16(nb.length),b(0,0),b(0,0),b(0,0),b(0,0),b(0,0,0,0),u32(offset),nb);
+    localParts.push(lh); centralParts.push(ce); offset += lh.length;
+  }
+  const cdSize = centralParts.reduce((s,a) => s+a.length, 0);
+  const total = Object.keys(files).length;
+  const eocd = concat(b(0x50,0x4B,0x05,0x06),b(0,0,0,0),u16(total),u16(total),u32(cdSize),u32(offset),b(0,0));
+  return concat(...localParts, ...centralParts, eocd);
+}
+
+// ============================================================
+//  CLI SECTION
+// ============================================================
+function unlockCLI() {
+  document.getElementById('cliLocked').classList.add('hidden');
+  document.getElementById('cliContent').classList.remove('hidden');
+  refreshRouterGrid();
+  refreshSerialSection();
+}
+
+function lockCLI() {
+  document.getElementById('cliLocked').classList.remove('hidden');
+  document.getElementById('cliContent').classList.add('hidden');
+  document.getElementById('cliOutputSection').classList.add('hidden');
+  routers = []; serialLinks = []; routerCount = 0;
+}
+
+function setTopo(t) {
+  topo = t;
+  document.getElementById('topoRing').classList.toggle('active', t === 'ring');
+  document.getElementById('topoBus').classList.toggle('active', t === 'bus');
+  refreshSerialSection();
+}
+
+function setProto(p) {
+  proto = p;
+  document.querySelectorAll('[data-proto]').forEach(b => b.classList.toggle('active', b.dataset.proto === p));
+  document.getElementById('eigrpAsField').classList.toggle('hidden', p !== 'eigrp');
+  document.getElementById('ospfPidField').classList.toggle('hidden', p !== 'ospf');
+  document.getElementById('bgpAsField').classList.toggle('hidden', p !== 'bgp');
+}
+
+function addRouter() {
+  routerCount++;
+  routers.push({ id: routerCount, name: 'R' + routerCount, lans: [] });
+  refreshRouterGrid();
+  refreshSerialSection();
+}
+
+function removeLastRouter() {
+  if (routers.length === 0) return;
+  routers.pop();
+  refreshRouterGrid();
+  refreshSerialSection();
+}
+
+function refreshRouterGrid() {
+  const grid = document.getElementById('routerAssignGrid');
+  grid.innerHTML = '';
+  routers.forEach((r, ri) => {
+    const div = document.createElement('div');
+    div.className = 'router-card';
+    let checks = subnetData.map((s, si) =>
+      `<label>
+        <input type="checkbox" ${r.lans.includes(si) ? 'checked' : ''} onchange="toggleLan(${ri}, ${si}, this.checked)">
+        Net ${s.no}: ${s.networkId}${s.cidr}
+      </label>`
+    ).join('');
+    div.innerHTML = `<div class="router-card-title">${r.name}</div>
+      <div class="net-check-list">${checks}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function toggleLan(ri, si, checked) {
+  if (checked) { if (!routers[ri].lans.includes(si)) routers[ri].lans.push(si); }
+  else routers[ri].lans = routers[ri].lans.filter(x => x !== si);
+}
+
+function buildNetOpts(link) {
+  const subnetOpts = subnetData.map((s, si) =>
+    `<option value="${si}" ${link.netIndex === si ? 'selected' : ''}>Net ${s.no}: ${s.networkId}${s.cidr}</option>`
+  ).join('');
+  const classAOpts = classANets.map((n, ci) =>
+    `<option value="a:${ci}" ${link.classAIndex === ci ? 'selected' : ''}>${n.networkId}${n.cidr}</option>`
+  ).join('');
+  return `${subnetOpts}<optgroup label="── Class A Networks ──">${classAOpts}</optgroup>`;
+}
+
+function refreshSerialSection() {
+  const hint = document.getElementById('serialHint');
+  const list = document.getElementById('serialList');
+  const addRow = document.getElementById('serialAddRow');
+  addRow.classList.add('hidden');
+  list.innerHTML = '';
+
+  if (routers.length < 2) {
+    hint.textContent = (topo === 'ring' ? 'Ring' : 'Bus') + ' topology: add at least 2 routers to auto-generate serial links.';
+    serialLinks = [];
+    return;
+  }
+
+  // Preserve existing assignments by router pair key
+  const prevAssignments = {};
+  serialLinks.forEach(link => {
+    prevAssignments[link.r1 + '_' + link.r2] = { netIndex: link.netIndex, classAIndex: link.classAIndex };
+  });
+  serialLinks = [];
+
+  const n = routers.length;
+  if (topo === 'ring') {
+    hint.textContent = 'Ring topology: serial links auto-generated. Assign a network to each link.';
+    // Circular: R1-R2, R2-R3, ..., Rn-R1
+    for (let i = 0; i < n; i++) {
+      const r1 = i, r2 = (i + 1) % n;
+      const prev = prevAssignments[r1 + '_' + r2] || { netIndex: -1, classAIndex: -1 };
+      serialLinks.push({ r1, r2, netIndex: prev.netIndex, classAIndex: prev.classAIndex });
+    }
+  } else {
+    hint.textContent = 'Bus topology: serial links auto-generated. Assign a network to each link.';
+    // Linear chain: R1-R2, R2-R3, ..., R(n-1)-Rn (no loop back)
+    for (let i = 0; i < n - 1; i++) {
+      const r1 = i, r2 = i + 1;
+      const prev = prevAssignments[r1 + '_' + r2] || { netIndex: -1, classAIndex: -1 };
+      serialLinks.push({ r1, r2, netIndex: prev.netIndex, classAIndex: prev.classAIndex });
+    }
+  }
+
+  serialLinks.forEach((link, li) => {
+    const div = document.createElement('div');
+    div.className = 'serial-entry';
+    div.innerHTML = `
+      <span style="color:var(--blue); min-width:90px; font-size:11px; font-family:var(--mono);">${routers[link.r1].name} &harr; ${routers[link.r2].name}</span>
+      <span class="serial-sep">&rarr;</span>
+      <select onchange="setSerialNet(${li}, this.value)">
+        <option value="-1">-- Select Network --</option>
+        ${buildNetOpts(link)}
+      </select>`;
+    list.appendChild(div);
+  });
+}
+function setSerialNet(li, val) {
+  if (val.startsWith('a:')) {
+    serialLinks[li].netIndex = -1;
+    serialLinks[li].classAIndex = parseInt(val.slice(2));
+  } else {
+    serialLinks[li].classAIndex = -1;
+    serialLinks[li].netIndex = parseInt(val);
+  }
+}
+function setSerialR(li, which, val) { serialLinks[li][which] = parseInt(val); }
+
+function resetCLI() {
+  routers = []; serialLinks = []; routerCount = 0;
+  proto = 'static'; topo = 'ring';
+  document.querySelectorAll('[data-proto]').forEach(b => b.classList.toggle('active', b.dataset.proto === 'static'));
+  document.getElementById('topoRing').classList.add('active');
+  document.getElementById('topoBus').classList.remove('active');
+  ['eigrpAsField','ospfPidField','bgpAsField'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('cliOutputSection').classList.add('hidden');
+  refreshRouterGrid();
+  refreshSerialSection();
+}
+
+function generateCLI() {
+  const errEl = document.getElementById('cliError');
+  errEl.textContent = '';
+  if (routers.length === 0) { errEl.textContent = 'Add at least one router.'; return; }
+  for (const link of serialLinks) {
+    if (link.netIndex === -1 && link.classAIndex === -1) { errEl.textContent = 'Assign a network to every serial link.'; return; }
+    if (link.r1 === -1 || link.r2 === -1) { errEl.textContent = 'Select both routers for every serial link.'; return; }
+  }
+  const eigrpAs = parseInt(document.getElementById('eigrpAs').value) || 100;
+  const ospfPid = parseInt(document.getElementById('ospfPid').value) || 1;
+  const bgpAs  = parseInt(document.getElementById('bgpAs').value) || 65001;
+  const outputsDiv = document.getElementById('cliOutputs');
+  outputsDiv.innerHTML = '';
+
+  // Build adjacency graph for static routing BFS
+  function buildGraph() {
+    const graph = routers.map(() => []);
+    serialLinks.forEach((link, li) => {
+      if (link.r1 !== -1 && link.r2 !== -1) {
+        graph[link.r1].push({ neighbor: link.r2, linkIdx: li });
+        graph[link.r2].push({ neighbor: link.r1, linkIdx: li });
+      }
+    });
+    return graph;
+  }
+
+  // BFS: returns the serial linkIdx of the first hop from src toward dst
+  function firstHopLink(graph, src, dst) {
+    if (src === dst) return null;
+    const visited = new Array(routers.length).fill(false);
+    const queue = [[src, null]];
+    visited[src] = true;
+    while (queue.length) {
+      const [cur, fhLink] = queue.shift();
+      for (const { neighbor, linkIdx } of graph[cur]) {
+        if (visited[neighbor]) continue;
+        visited[neighbor] = true;
+        const resolvedLink = fhLink !== null ? fhLink : linkIdx;
+        if (neighbor === dst) return resolvedLink;
+        queue.push([neighbor, resolvedLink]);
+      }
+    }
+    return null;
+  }
+
+  const topoGraph = buildGraph();
+
+  routers.forEach((router, ri) => {
+    let ipCli = `enable\nconfigure terminal\nhostname ${router.name}\n!\n`;
+    let routeCli = '';
+    router.lans.forEach((si, idx) => {
+      if (idx > 1) return; // 1841 only has FastEthernet0/0 and FastEthernet0/1
+      const s = subnetData[si];
+      ipCli += `interface FastEthernet0/${idx}\n ip address ${s.first} ${s.mask}\n no shutdown\n!\n`;
+    });
+    let serialPortIdx = 0;
+    serialLinks.forEach((link, li) => {
+      if (link.r1 !== ri && link.r2 !== ri) return;
+      const s = getSerialNet(link);
+      const iface = `Serial0/1/${serialPortIdx++}`;
+      const isDCE = link.r1 === ri;
+      const assignedIp = isDCE ? s.first : s.second;
+      ipCli += `interface ${iface}\n ip address ${assignedIp} ${s.mask}\n`;
+      if (isDCE) ipCli += ` clock rate 64000\n`;
+      ipCli += ` no shutdown\n!\n`;
+    });
+    ipCli += `end\n`;
+
+    if (proto === 'static') {
+      routeCli = `enable\nconfigure terminal\n!\n! Static routing for ${router.name}\n!\n`;
+      const myNets = new Set();
+      router.lans.forEach(si => myNets.add(si));
+      serialLinks.forEach(link => { if ((link.r1 === ri || link.r2 === ri) && link.netIndex !== -1) myNets.add(link.netIndex); });
+      subnetData.forEach((s, si) => {
+        if (myNets.has(si)) return;
+        // Find any router directly connected to this network
+        let ownerRouter = -1;
+        for (let r = 0; r < routers.length; r++) {
+          if (r === ri) continue;
+          if (routers[r].lans.includes(si)) { ownerRouter = r; break; }
+          if (serialLinks.some(l => (l.r1 === r || l.r2 === r) && l.netIndex === si)) { ownerRouter = r; break; }
+        }
+        if (ownerRouter === -1) return;
+        const li = firstHopLink(topoGraph, ri, ownerRouter);
+        if (li === null) return;
+        const link = serialLinks[li];
+        const linkNet = getSerialNet(link);
+        const gateway = link.r1 === ri ? linkNet.second : linkNet.first;
+        routeCli += `ip route ${s.networkId} ${s.mask} ${gateway}\n`;
+      });
+      routeCli += `end\n`;
+    } else if (proto === 'rip') {
+      routeCli = `enable\nconfigure terminal\n!\nrouter rip\n version 2\n no auto-summary\n`;
+      getRouterNets(ri).forEach(si => { routeCli += ` network ${subnetData[si].networkId}\n`; });
+      routeCli += `!\nend\n`;
+    } else if (proto === 'eigrp') {
+      routeCli = `enable\nconfigure terminal\n!\nrouter eigrp ${eigrpAs}\n no auto-summary\n`;
+      getRouterNets(ri).forEach(si => {
+        const s = subnetData[si];
+        routeCli += ` network ${s.networkId}\n`;
+      });
+      routeCli += `!\nend\n`;
+    } else if (proto === 'ospf') {
+      routeCli = `enable\nconfigure terminal\n!\nrouter ospf ${ospfPid}\n`;
+      getRouterNets(ri).forEach(si => {
+        const s = subnetData[si];
+        routeCli += ` network ${s.networkId} ${intToIp(wildcardMask(s.maskInt))} area 0\n`;
+      });
+      routeCli += `!\nend\n`;
+    } else if (proto === 'bgp') {
+      routeCli = `enable\nconfigure terminal\n!\nrouter bgp ${bgpAs}\n no auto-summary\n`;
+      getRouterNets(ri).forEach(si => { routeCli += ` network ${subnetData[si].networkId} mask ${subnetData[si].mask}\n`; });
+      serialLinks.forEach(link => {
+        let nIdx = link.r1 === ri ? link.r2 : (link.r2 === ri ? link.r1 : -1);
+        if (nIdx === -1) return;
+        const ns = getSerialNet(link);
+        routeCli += ` neighbor ${link.r1 === ri ? ns.second : ns.first} remote-as ${bgpAs}\n`;
+      });
+      routeCli += `!\nend\n`;
+    }
+
+    const block = document.createElement('div');
+    block.className = 'router-output';
+    block.innerHTML = `
+      <div class="router-output-header">${router.name} Configuration</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'ip-${ri}')">IP Configuration</button>
+        <button class="tab-btn" onclick="switchTab(this,'route-${ri}')">Routing</button>
+      </div>
+      <div id="ip-${ri}" class="tab-content active">
+        <div class="code-block" id="code-ip-${ri}"><button class="copy-btn" onclick="copyCode('code-ip-${ri}',this)">COPY</button>${escHtml(ipCli)}</div>
+      </div>
+      <div id="route-${ri}" class="tab-content">
+        <div class="code-block" id="code-route-${ri}"><button class="copy-btn" onclick="copyCode('code-route-${ri}',this)">COPY</button>${escHtml(routeCli)}</div>
+      </div>`;
+    outputsDiv.appendChild(block);
+  });
+
+  document.getElementById('cliOutputSection').classList.remove('hidden');
+  document.getElementById('cliOutputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getRouterNets(ri) {
+  const nets = new Set(routers[ri].lans);
+  serialLinks.forEach(link => { if (link.r1 === ri || link.r2 === ri) { if (link.netIndex !== -1) nets.add(link.netIndex); } });
+  return [...nets];
+}
+
+function switchTab(btn, tabId) {
+  const parent = btn.closest('.router-output');
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function copyCode(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.innerText.replace(/^COPY\n/, '').replace(/^COPY/, '');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIED!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildCheatSheet();
+  loadCNSData();
+});
+</script>
+</body>
+</html>
