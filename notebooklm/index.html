@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NotepadLM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- PDF.js for reading PDF files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs" type="module"></script>
+
+  <!-- Mammoth.js for reading DOCX files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- Left sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">◈</span>
+          <span class="logo-text">NotepadLM</span>
+        </div>
+        <button id="btn-new-notebook" class="btn-icon-text" title="New notebook">
+          <span class="icon">+</span>
+          <span>New</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section-label">Notebooks</div>
+      <ul id="notebook-list" class="notebook-list"></ul>
+
+      <div class="sidebar-footer">
+        <button id="btn-settings" class="btn-ghost" title="Settings">
+          <span class="icon">⚙</span>
+          Settings
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <main id="main-panel">
+
+      <!-- Empty state: shown when no notebook is open -->
+      <div id="empty-state" class="empty-state">
+        <div class="empty-state-icon">◈</div>
+        <h2>Your AI study companion</h2>
+        <p>Create a notebook, upload your documents, and start asking questions.</p>
+        <button id="btn-new-notebook-empty" class="btn-primary">Create your first notebook</button>
+      </div>
+
+      <!-- Chat panel: shown when a notebook is open -->
+      <div id="chat-panel" class="chat-panel hidden">
+
+        <!-- Top bar -->
+        <div class="chat-topbar">
+          <div class="chat-topbar-left">
+            <h1 id="notebook-title" class="notebook-title">Notebook</h1>
+          </div>
+          <div class="chat-topbar-right">
+            <button id="btn-feature-summary"    class="btn-feature">Summary</button>
+            <button id="btn-feature-flashcards" class="btn-feature">Flashcards</button>
+            <button id="btn-feature-quiz"       class="btn-feature">Quiz</button>
+          </div>
+        </div>
+
+        <!-- Source documents -->
+        <div class="document-panel">
+          <div class="document-panel-header">
+            <span class="section-label">Sources</span>
+            <label id="btn-upload" class="btn-upload" title="Upload document">
+              <input type="file" id="file-input" accept=".pdf,.txt,.docx" hidden />
+              + Add source
+            </label>
+          </div>
+          <ul id="document-list" class="document-list"></ul>
+          <div id="upload-status" class="upload-status hidden"></div>
+        </div>
+
+        <!-- Messages -->
+        <div id="chat-messages" class="chat-messages">
+          <div id="chat-empty" class="chat-empty">
+            <p>Ask anything about your sources.</p>
+          </div>
+        </div>
+
+        <!--
+          Input bar.
+          Layout (left to right): textarea | model dropdown | send button
+          The model dropdown is populated by chatview.js on notebook open.
+        -->
+        <div class="chat-input-bar">
+          <div id="status-indicator" class="status-indicator hidden"></div>
+          <div class="input-row">
+            <textarea
+              id="chat-input"
+              class="chat-input"
+              placeholder="Ask a question about your documents..."
+              rows="1"
+            ></textarea>
+
+            <!-- Model picker inside the input bar -->
+            <select id="select-model-inline" class="select-model-inline" title="Choose model"></select>
+
+            <button id="btn-send" class="btn-send" title="Send">
+              <span>↑</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Settings modal: only provider switcher now, model is picked in the chat bar -->
+  <div id="settings-overlay" class="modal-overlay hidden">
+    <div class="modal settings-modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button id="btn-close-settings" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <label class="settings-label">AI Provider</label>
+          <div class="mode-tabs" id="mode-tabs">
+            <button class="mode-tab active" data-provider="gemini">Gemini</button>
+            <button class="mode-tab" data-provider="groq">Groq</button>
+            <button class="mode-tab" data-provider="openrouter">OpenRouter</button>
+            <!--
+              Local mode: pure document search with no AI.
+              The app retrieves relevant passages using TF-IDF similarity
+              and shows them directly. No LLM is loaded or called.
+            -->
+            <button class="mode-tab" data-provider="local">Local</button>
+          </div>
+          <p class="settings-hint" id="settings-provider-hint"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn-primary">Save settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New notebook modal -->
+  <div id="notebook-modal-overlay" class="modal-overlay hidden">
+    <div class="modal notebook-modal">
+      <div class="modal-header">
+        <h2 id="notebook-modal-title">New notebook</h2>
+        <button id="btn-close-notebook-modal" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="settings-label">Title</label>
+        <input type="text" id="input-notebook-title" class="settings-input" placeholder="e.g. Biology Chapter 4" maxlength="80" />
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-notebook" class="btn-primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
