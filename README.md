@@ -1,6 +1,6 @@
 # Personal Projects Compilation
 
-A collection of personal projects:
+A compilation of personal projects:
 
 - subnetforge
 - flashcard-reviewer
